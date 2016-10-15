@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Playlist editor</title>
+	<script   src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+	<script   src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js"   integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="   crossorigin="anonymous"></script>
+<link rel="stylesheet" href="http://code.jquery.com/ui/jquery-ui-git.css">
+	<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+	<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	<!--<script src="socket.io/socket.io.js"></script>-->
+	<style>
+	  #playlist, #lstClip{
+	    border: 1px solid #eee;
+	    width: 240px;
+	    min-height: 20px;
+	    list-style-type: none;
+	    margin: 0;
+	    padding: 5px 0 0 0;
+	    float: left;
+	    margin-right: 10px;
+	  }
+	  #playlist li, #lstClip li {
+	    margin: 0 5px 5px 5px;
+	    padding: 5px;
+	    font-size: 1.2em;
+	    width: 240px;
+	  }
+	  </style>
+	<script>
+			var lstFilter = [];
+			$("document").ready(function(){
+
+				//creo listas ordenables y dropeables.
+				$( "#playlist, #lstClip" ).sortable({
+		      connectWith: ".connectedSortable",
+					receive: function( event, ui ) {
+						if(ui.item.parent("ul").prop("id")== "playlist"){
+								createSelectFilter(ui.item);
+						}
+						else {
+							ui.item.children("select").remove();
+						}
+					}
+		    }).disableSelection();
+
+				//creo el select de filtros para los clip de la playlist
+				function createSelectFilter (li){
+					var select = $("<select>",{"class":"form-control"}).change(function(){
+						var optionSelected = $("option:selected", this);
+						var valueSelected = this.value;
+						console.log(valueSelected);
+						console.log($(this).parent("li"));
+
+						$(this).parent("li").data("clip").idFilter = valueSelected;
+						console.log($(this).parent("li").data("clip"));
+
+					});
+
+					select.append($("<option>").val(null).html("select one filter"));
+
+					li.append(select);
+
+					$.each(lstFilter, function(idx,item){
+						select.append($("<option>").html(item.name).val(item.id));
+					});
+					select.val(li.data("clip").idFilter).change();
+				}
+
+				var socket= io.connect('http://localhost:3002');
+
+				// Add a connect listener
+				socket.on('connect',function() {
+					console.log('Client has connected to the server!');
+					// Sends a message to the server via sockets
+
+				});
+
+				//escucha por los datos de filtros
+				socket.on('lstFilter',function(data) {
+					//console.log(lstFilter);
+					lstFilter = data;
+				});
+
+				//Escucha por los datos de la playlist
+				socket.on ("playlistData",function(data){
+					if(data){
+							//elimino lista de clips
+							$("#playlist li").remove();
+
+							//creo un li por cada clip
+							$.each(data.clips, function(idx,clip){
+								var li = $("<li>",{"id":clip.name,"class":"ui-state-default", "style":"z-index:1000"}).html("<span class='glyphicon glyphicon-facetime-video' aria-hidden='true'></span> "+clip.name).data("clip", clip)
+								createSelectFilter(li);
+								$("#playlist").append(li);
+							});
+					}
+				});
+
+				//Escucha por los datos de los clips
+				socket.on ("lstClip",function(lstClip,clipDirectory){
+					if(lstClip){
+							lstClip = lstClip;
+							$("#clipDirectory").html("Clips => Directory: " + clipDirectory);
+							//elimino lista de clips
+							$("#lstClip li").remove();
+
+							//ordeno la lista de clips
+							var clips = lstClip.sort(function(a, b){return a.order> b.order});
+
+							//creo un li por cada clip
+							$.each(clips, function(idx,clip){
+
+								$("#lstClip").append($("<li>",{"id":clip.id,"class":"ui-state-highlight", "style":"z-index:1000"}).html("<span class='glyphicon glyphicon-facetime-video' aria-hidden='true'></span> "+clip.name).data("clip", clip));
+
+							});
+					}
+				});
+
+				// Add a disconnect listener
+				socket.on('disconnect',function() {
+					console.log('The client has disconnected!');
+				});
+
+				//Eventos ui
+				$("#btnSave").click(function(){
+
+					var playlistData ={
+						id : "pl1",
+						name : "playlist1",
+						clips : []
+					};
+					var arrayClip = [];
+					$.each($( "#playlist li" ), function(idx,clip){
+						playlistData.clips.push($(clip).data("clip"));
+					});
+					console.log(playlistData);
+
+					socket.emit("playlistChanged",playlistData );
+
+
+				});
+
+				$("#btnClearAll").click(function(){
+					alert("todavía no anda gato XD");
+				});
+
+
+
+
+			})
+
+	</script>
+</head>
+<body>
+	<nav class="navbar navbar-inverse">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="collapsed navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-9" aria-expanded="false">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					 <span class="icon-bar"></span> </button>
+					 <a href="#" class="navbar-brand">Magma-playout</a>
+				 </div>
+				 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-9">
+					 <ul class="nav navbar-nav">
+						 <li class="active">
+							 <a href="#">Home</a>
+						 </li>
+						 <li class="active">
+							 <a href="#">Playout</a>
+						 </li>
+					 </ul>
+				 </div>
+			 </div>
+		  </nav>
+
+	<div id="container" class="row">
+			<div class="panel panel-primary"  style="width:50%; min-height:400px; display:inline-table">
+				<div class="panel-heading">
+					<h3 class="panel-title"><label>Playlist</label></h3>
+				 </div>
+				 <div class="panel-body" style="position:relative; z-index:2; ">
+					 <ul id="playlist" class="connectedSortable">
+					</ul>
+					<button id="btnSave" class="btn btn-success">Save and play!</button>
+					<button id="btnClearAll" class="btn btn-success">Resetear melted!</button>
+
+				 </div>
+			 </div>
+			 <div class="panel panel-primary"  style="width:49%;  display:inline-table; ">
+ 				<div class="panel-heading">
+ 					<h3 class="panel-title"><label id="clipDirectory"></label></h3>
+ 				 </div>
+ 				 <div class="panel-body" style="position:relative; min-height:400px; max-height:600px; overflow-y: scroll; z-index:2; ">
+
+
+	 	 			<ul id="lstClip" class="connectedSortable" >
+
+	 	 			</ul>
+
+ 				 </div>
+ 			 </div>
+
+	</div>
+
+</body>
+</html>
