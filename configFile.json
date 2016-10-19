@@ -1,0 +1,6 @@
+{
+  "app" : {
+    "port" : "3002",
+    "clipDirectory": "/home/luis/Documentos/piren"
+  }
+}

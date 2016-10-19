@@ -7,6 +7,7 @@ module.exports = function(httpServer,log){
   var config = require("./config.js");
   var filter = require("./filter.js");
 
+console.log(config);
   client.on('connect', function() {
       console.log('mp-playlist -> Redis connected');
   });
