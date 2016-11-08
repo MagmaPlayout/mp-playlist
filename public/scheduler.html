@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Scheduler</title>
+  <script   src="../public/js/jquery-3.1.1.min.js" ></script>
+	<script   src="../public/js/jquery-ui.min.js"   integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="   crossorigin="anonymous"></script>
+
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="../public/lib/bootstrap-3.3.7-dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="../public/lib/bootstrap-3.3.7-dist/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="../public/lib/bootstrap-3.3.7-dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+	<script src="socket.io/socket.io.js"></script>
+
+
+	<link rel="stylesheet" href="../public/lib/fullcalendar-3.0.1/fullcalendar.min.css" >
+	<link rel="stylesheet" href="../public/lib/fullcalendar-3.0.1/fullcalendar.print.css" >
+		<script src = "http://momentjs.com/downloads/moment.js"></script>
+	<script src = "../public/lib/fullcalendar-3.0.1/fullcalendar.min.js"></script>
+<script>
+  function initFullCalendar(){
+      $('#calendar').fullCalendar({
+        header: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'month,agendaWeek,agendaDay,listWeek'
+        },
+        defaultDate: '2016-09-12',
+        navLinks: true, // can click day/week names to navigate views
+        editable: true,
+        eventLimit: true, // allow "more" link when too many events
+        events: [
+          {
+            title: 'All Day Event',
+            start: '2016-09-01'
+          },
+          {
+            title: 'Long Event',
+            start: '2016-09-07',
+            end: '2016-09-10'
+          },
+          {
+            id: 999,
+            title: 'Repeating Event',
+            start: '2016-09-09T16:00:00'
+          },
+          {
+            id: 999,
+            title: 'Repeating Event',
+            start: '2016-09-16T16:00:00'
+          },
+          {
+            title: 'Conference',
+            start: '2016-09-11',
+            end: '2016-09-13'
+          },
+          {
+            title: 'Meeting',
+            start: '2016-09-12T10:30:00',
+            end: '2016-09-12T12:30:00'
+          },
+          {
+            title: 'Lunch',
+            start: '2016-09-12T12:00:00'
+          },
+          {
+            title: 'Meeting',
+            start: '2016-09-12T14:30:00'
+          },
+          {
+            title: 'Happy Hour',
+            start: '2016-09-12T17:30:00'
+          },
+          {
+            title: 'Dinner',
+            start: '2016-09-12T20:00:00'
+          },
+          {
+            title: 'Birthday Party',
+            start: '2016-09-13T07:00:00'
+          },
+          {
+            title: 'Click for Google',
+            url: 'http://google.com/',
+            start: '2016-09-28'
+          }
+        ]
+      });
+  }
+  $("document").ready(function(){
+      initFullCalendar();
+  });
+
+</script>
+</head>
+<body>
+  <div id="calendar"></div>
+</body>
+<html>

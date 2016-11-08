@@ -1,8 +1,10 @@
 {
-  "name": "Wcam-live",
+  "name": "mp-playlist-editor",
   "version": "1.0.0",
   "dependencies": {
+    "bluebird": "^3.4.6",
     "express": "*",
+    "fullcalendar": "^3.0.1",
     "log": "*",
     "redis": "^2.6.2",
     "socket.io": "*"

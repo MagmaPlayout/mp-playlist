@@ -17,9 +17,11 @@ var port = process.env.PORT || config.app.port;
 app.use(express.static(__dirname + "/public"));
 app.use("/public/js", express.static(__dirname + "/public/js"));
 app.use("/public/css", express.static(__dirname + "/public/css"));
+app.use("/public/img", express.static(__dirname + "/public/img"));
 app.use("/public/lib/bootstrap-3.3.7-dist/css/", express.static(__dirname + "/public/lib/bootstrap-3.3.7-dist/css/"));
 app.use("/public/lib/bootstrap-3.3.7-dist/fonts/", express.static(__dirname + "/public/lib/bootstrap-3.3.7-dist/fonts/"));
 app.use("/public/lib/bootstrap-3.3.7-dist/js/", express.static(__dirname + "/public/lib/bootstrap-3.3.7-dist/js/"));
+app.use("/public/lib/fullcalendar-3.0.1/", express.static(__dirname + "/public/lib/fullcalendar-3.0.1/"));
 
 
 app.get('/',function(req,res){
@@ -28,7 +30,9 @@ app.get('/',function(req,res){
 
 
 http.listen(port,function(){
-	log.info("Playlist editor - Welcome cats!");
+	console.log("---------------------------------------------------------");
+	console.log("---------- Magma-Playout | Playlist Editor 1.0 ----------");
+	console.log("---------------------------------------------------------");
 	log.info("Servidor escuchando a traves del puerto %s",port)
 
 });

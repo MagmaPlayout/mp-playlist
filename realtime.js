@@ -6,58 +6,157 @@ module.exports = function(httpServer,log){
   var clip = require("./clip.js");
   var config = require("./config.js");
   var filter = require("./filter.js");
+  var playlist = require("./playlist.js");
 
-console.log(config);
+
   client.on('connect', function() {
       console.log('mp-playlist -> Redis connected');
   });
-  //client.set("pl1",JSON.stringify({id:"pl1", clips:[{name:"clip1", path:"/home/user/holga.mkv", order: 1}, {name: "clip2", path:"/home/user/relog.mkv", order: 2}]}));
-  //client.subscribe("filterChanged");
 
   io.on('connection',function(socket){
-  	log.info("Un cliente se conecto" );
-
+  	
     //todo - hacer un subscribe con redis para saber si se cambio algo en los filtros.
     filter.getAll(function(error,reply){
       socket.emit("lstFilter",reply);
     });
 
     //Cuando la playlist cambia, guardo la playlist en redis, aviso a los clientes conectados y public en el canal PCCP.
-    socket.on('playlistChanged', function(data) {
-      ///esto es medio pt -> aca hay que validar que guarde bien para continuar.
-      client.set('pl1', JSON.stringify(data), function(err, reply) {
+    socket.on('playlistChanged', function(pl) {
 
-          if(!err){
-            console.log("se actualizaron los datos en redis");
-            client.get("pl1", function(err, playlistData) {
-              	socket.broadcast.emit("playlistData",JSON.parse(playlistData));
+      playlist.update(pl, function(err,reply){
 
-              //aca va el publicar, pero me tira error.
-              client.publish("PCCP","PLAYNOW " + data.id );
-            });
-          }
-      });
+        if(!err){
+            //socket.broadcast.emit("playlistData",JSON.parse(playlistData));
+        }
+        else{
+          log.info("Playlist Update failed")
+        }
+      })
 
     });
 
+    //Cuando la playlist cambia, guardo la playlist en redis, aviso a los clientes conectados y public en el canal PCCP.
+    socket.on('play', function(pl) {
+      client.publish("PCCP","PLAYNOW " + pl.id );
+
+    });
 
 
     //Obtengo una playlist y la envio al cliente conectado
-    // por ahora obtengo una playlist por su id pero hay que obtener una lista de playlist por algun otra key que podria ser la del usuario.
-    client.get("pl1", function(err, playlistData) {
-      socket.emit("playlistData",JSON.parse(playlistData));
-      clip.getFromDir(config.app.clipDirectory, function(lstClip) {
-          socket.emit("lstClip",lstClip,config.app.clipDirectory);
+    socket.on('plGetById', function(id) {
+      playlist.getById(id,function(error, pl) {
+        socket.emit("plGetById_result",pl);
       });
-
     });
 
+    // lista de todos los clips transcodeados
+    clip.getAll().then(function(mediaList){
+      //console.log(mediaList);
+        socket.emit("mediaList", mediaList);
+    }).catch(function (e) {
+        console.error("Error- medialist");
+    });
+
+    playlist.getAll().then(function(reply){
+      //socket.emit("playlistData",JSON.parse(playlistData));
+      socket.emit("plList",reply);
+    }).catch(function (e) {
+        console.error("Error- playlist");
+    });
+
+
+
+    /*
     client.on("message",function(channel, message){
       if(channel=="filterChanged"){
         socket.emit('redisMessage',message);
 
       }
 
-    } );
+    });
+    */
   });
 }
+
+
+
+
+/*
+var playlistDePrueba =
+  {
+    "id":"0",
+    "name":"playlist1",
+    "clips":[
+      {
+        "id":0,
+        "name":"a.mkv",
+        "path":"/home/rombus/Documentos/PROYECTO_FINAL/Documents/VIDS/a.mkv",
+        "duration":"PT15.43S",
+        "frames":381,
+        "fps":25,
+        "idFilter":"0"
+      },
+      {
+        "id":5,
+      "name":"b.m4v",
+      "path":"/home/rombus/Documentos/PROYECTO_FINAL/Documents/VIDS/b.mkv",
+      "duration":"PT07.60S",
+      "frames":190,
+      "fps":25,
+      "idFilter":""
+      },
+    ]
+  }
+  */
+
+
+/*
+  playlist.add
+  (
+    {
+    "id":"-",
+    "name":"playlist22",
+    "clips":[
+      {
+        "id":0,
+        "name":"a.mkv",
+        "path":"/home/rombus/Documentos/PROYECTO_FINAL/Documents/VIDS/a.mkv",
+        "duration":"PT15.43S",
+        "frames":381,
+        "fps":25,
+        "idFilter":"0"
+      },
+      {
+        "id":5,
+      "name":"b.m4v",
+      "path":"/home/rombus/Documentos/PROYECTO_FINAL/Documents/VIDS/b.mkv",
+      "duration":"PT07.60S",
+      "frames":190,
+      "fps":25,
+      "idFilter":""
+      },
+    ]
+    }
+  );
+
+  /*
+playlist.update(
+  {
+  "id":"2",
+  "name":"playlist22",
+  "clips":[1,2]
+  }
+)
+*/
+
+/*
+clip.add({
+"id":0,
+"name":"b.m4v",
+"path":"/home/rombus/Documentos/PROYECTO_FINAL/Documents/VIDS/b.mkv",
+"duration":"PT07.60S",
+"frames":190,
+"fps":25,
+"idFilter":""
+});
+*/
