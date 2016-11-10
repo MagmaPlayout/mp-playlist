@@ -1,9 +1,9 @@
 var express = require ("express");
 var app = new express();
 var http = require("http").Server(app);
-var realtime = require("./realtime");
+var realtime = require("./main.js");
 var config = require("./config.js");
-var filter = require("./filter.js");
+var filter = require("./DAO/filter.js");
 
 
 var Log = require ("log"),
