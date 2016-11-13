@@ -35,8 +35,7 @@ module.exports = function(httpServer,log){
     // Nueva playlist
     socket.on('playlistAdd', function(pl) {
       playlist.add(pl,function(error,reply){
-          playlist.getAll().then(function(reply){
-          console.log("llegueeeeeeeeeeeeeeeeeeeeeee");
+          playlist.getAll().then(function(reply){        
             socket.emit("plList",reply);
           }).catch(function (e) {
               console.error("Error- playlist");
@@ -54,7 +53,8 @@ module.exports = function(httpServer,log){
     socket.on('schedulerPlay', function(sch) {
 
       sch.ocurrences.forEach(function(item, idx){
-        client.publish("PCCP","PLAYNOW " + item.plId );
+        //PLSCHED <pl id> <timestamp>
+        client.publish("PCCP","PLSCHED " + item.plId + " " + item.start);
       })
 
 
