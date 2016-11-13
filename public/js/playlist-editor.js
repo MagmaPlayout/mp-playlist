@@ -37,9 +37,10 @@ if(withRemove){
 
 }
 
+
 function renderPlaylists(plList) {
   //elimino lista de clips
-  $("#plList li").remove();
+  $("#plList button").remove();
 
   //creo un li por cada clip
   //<button type="button" class="btn btn-primary">Sony</button>
@@ -68,6 +69,8 @@ function renderPlaylists(plList) {
 
 }
 
+
+//renderiza los clips de una playlist
 function renderPl(pl) {
   //elimino lista de clips
   $("#playlist li").remove();
@@ -143,6 +146,7 @@ function renderPl(pl) {
 
 		//Escucha por los datos de la playlist
 		socket.on ("plList",function(data){
+      console.log(data);
 			if(data){
 					renderPlaylists(data);
 			}
@@ -203,5 +207,16 @@ function renderPl(pl) {
 		$("#btnClearAll").click(function(){
 			alert("todavía no anda gato XD");
 		});
+
+    $("#btnAdd_playlist").click(function(){
+      var pl =
+      {
+        "id":"0",
+        "name": $("#newPlaylist_name").val(),
+        "clips":[]
+      }
+			socket.emit("playlistAdd",pl);
+		});
+
 
 	})

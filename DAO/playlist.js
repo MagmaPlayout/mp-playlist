@@ -96,6 +96,9 @@ playlist.prototype.add = function (pl, callback){
 		multi.lpush(DATA_ALL, id);
 	  multi.exec(function(err,data){
 	  	console.log(data);
+			if(callback){
+				callback(err,data);
+			}
 	  });
 
 	});

@@ -8,6 +8,12 @@ function initFullCalendar(callback){
         center: 'title',
         right: 'agendaDay'
       },
+      //slotDuration: '00:01:00',
+      //snapDuration: '00:05:00',
+      //snapMinutes  : '00:10:00',
+      //slotMinutes: 1,
+      defaultTimedEventDuration: '00:30:00',
+      forceEventDuration: true,
       defaultDate: new Date(),
       defaultView: 'agendaDay',
       navLinks: true, // can click day/week names to navigate views
@@ -22,15 +28,14 @@ function initFullCalendar(callback){
         var ocurrence = {
           id:"",
           name: pl.name,
-          plId : pl.id,
-          start: date,
-          end:date
-        }
-        scheduler.ocurrences.push(ocurrence);
+          plId : pl.id
+
+        };
+
         $("#calendar").fullCalendar( 'renderEvent', {
           title: ocurrence.name,
-          start: ocurrence.start,
-          end: ocurrence.end,
+          start: date,
+          end: date,
           ocurrence: ocurrence
         });
 
@@ -44,8 +49,8 @@ function renderOcurrenceEvents(){
   scheduler.ocurrences.forEach(function(item,index){
     $("#calendar").fullCalendar( 'renderEvent', {
       title: item.name,
-      start: new Date(item.start),
-      end: new Date(item.end),
+      start: $.fullCalendar.moment(item.start),
+      end: $.fullCalendar.moment(item.end),
       ocurrence: item
     });
   })
@@ -60,6 +65,7 @@ function initSocketChannels(){
     scheduler = sch;
     console.log($("#calendar"));
     //console.log(sch);
+    /*
     if(sch){
       sch.ocurrences.forEach(function(item, idx){
         scheduler.ocurrences.push(
@@ -71,7 +77,7 @@ function initSocketChannels(){
           }
         );
       })
-    }
+    }*/
 
   });
 
@@ -102,14 +108,33 @@ function initSocketChannels(){
 
 }
 
+function setSchedulerOcurrences(){
+  //var d = $.deffered();
+  var events = $('#calendar').fullCalendar('clientEvents');
+  scheduler.ocurrences = [];
+  events.forEach(function(item,idx){
+    console.log(item);
+    var ocurrence = {
+      id:"",
+      name: item.ocurrence.name,
+      plId : item.ocurrence.plId,
+      start : item.start,
+      end : item.end
+    };
+    scheduler.ocurrences.push(ocurrence);
+  });
+}
+
 function bindEvents(){
   //Eventos ui
   $("#btnSave_scheduler").click(function(){
+    setSchedulerOcurrences();
     socket.emit("schedulerSave",scheduler );
 
   });
 
   $("#btnPlay_scheduler").click(function(){
+    setSchedulerOcurrences();
     socket.emit("schedulerPlay",scheduler );
 
   });
