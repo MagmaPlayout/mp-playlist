@@ -75,7 +75,7 @@ scheduler.prototype.add = function (sch, callback){
 	  multi.incr(SCHEDULER_IDS);
 		multi.lpush(SCHEDULER_ALL, id);
 	  multi.exec(function(err,data){
-	  	console.log(data);
+	  	
 			if(callback){
 				callback(err,data);
 			}

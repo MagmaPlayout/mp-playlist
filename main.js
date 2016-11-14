@@ -17,6 +17,13 @@ module.exports = function(httpServer,log){
 
   io.on('connection',function(socket){
 
+
+    filter.getAll(function(error,reply){
+  		if(!error){
+  			socket.emit("lstFilter", reply);
+  		}
+
+  	});
     //Cuando la playlist cambia, guardo la playlist en redis, aviso a los clientes conectados y public en el canal PCCP.
     socket.on('playlistChanged', function(pl) {
 
@@ -35,7 +42,7 @@ module.exports = function(httpServer,log){
     // Nueva playlist
     socket.on('playlistAdd', function(pl) {
       playlist.add(pl,function(error,reply){
-          playlist.getAll().then(function(reply){        
+          playlist.getAll().then(function(reply){
             socket.emit("plList",reply);
           }).catch(function (e) {
               console.error("Error- playlist");

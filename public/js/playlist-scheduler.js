@@ -1,6 +1,6 @@
-
 var scheduler = null;
 
+//init del plugin fullcalendar
 function initFullCalendar(callback){
     $('#calendar').fullCalendar({
       header: {
@@ -45,86 +45,75 @@ function initFullCalendar(callback){
 
 }
 
+//crea un evento por cada ocurrence en el calendar
 function renderOcurrenceEvents(){
   scheduler.ocurrences.forEach(function(item,index){
+    console.log(item);
     $("#calendar").fullCalendar( 'renderEvent', {
       title: item.name,
-      start: $.fullCalendar.moment(item.start),
-      end: $.fullCalendar.moment(item.end),
+      start: item.start,
+      end: item.end,
       ocurrence: item
     });
   })
 
 }
 
+//renderiza lista de playlists
+function plSchedulerRenderPlaylists(lstPl){
+  if(lstPl){ $("#lstPlaylist li").remove();
+  //creo un li por cada playlist
+  $.each(lstPl, function(idx,item){
+    $("#lstPlaylist").append($("<li>",{"id":item.id,"class":"external-event ui-state-default", "style":"z-index:1000"})
+    .html("<span class='glyphicon glyphicon-facetime-video' aria-hidden='true'></span> "+item.name).data("playlist", item));
+    $("#lstPlaylist li").draggable(
+      {
+        zIndex: 999,
+        revert: true,
+       });
+     });
+   }
+ }
+
+//declara los canales escuchados en socket
 function initSocketChannels(){
 
   //Escucha por los datos del scheduler
   socket.on ("schData",function(sch){
 
     scheduler = sch;
-    console.log($("#calendar"));
-    //console.log(sch);
-    /*
-    if(sch){
-      sch.ocurrences.forEach(function(item, idx){
-        scheduler.ocurrences.push(
-          {
-            title: "item.name",
-            start: new Date(),
-            end: new Date().setHours((new Date()).getHours() + 1 ),
-            ocurrence: item
-          }
-        );
-      })
-    }*/
 
   });
 
 
-  //Escucha por los datos de la playlist
-  socket.on ("plList",function(lstClip,clipDirectory){
-    if(lstClip){
-        lstClip = lstClip;
-        //elimino lista de clips
-        $("#lstPlaylist li").remove();
+  //Escucha por la lista de playlist
+  socket.on ("plList",function(lstPl,clipDirectory){
 
-        //ordeno la lista de clips
-        var clips = lstClip.sort(function(a, b){return a.order> b.order});
+    plSchedulerRenderPlaylists(lstPl);
 
-        //creo un li por cada clip
-        $.each(clips, function(idx,item){
-
-          $("#lstPlaylist").append($("<li>",{"id":item.id,"class":"external-event", "style":"z-index:1000"}).html("<span class='glyphicon glyphicon-facetime-video' aria-hidden='true'></span> "+item.name).data("playlist", item));
-
-          $("#lstPlaylist li").draggable({
-            zIndex: 999,
-            revert: true,      // will cause the event to go back to its
-            revertDuration: 0  //  original position after the drag
-          });
-        });
-    }
   });
 
 }
 
+// setea lista de ocurrence en el scheduler
 function setSchedulerOcurrences(){
   //var d = $.deffered();
   var events = $('#calendar').fullCalendar('clientEvents');
   scheduler.ocurrences = [];
   events.forEach(function(item,idx){
-    console.log(item);
     var ocurrence = {
       id:"",
       name: item.ocurrence.name,
       plId : item.ocurrence.plId,
-      start : item.start,
-      end : item.end
+      start : item.start.utcOffset("-03:00"),
+      end : item.end.utcOffset("-03:00")
     };
     scheduler.ocurrences.push(ocurrence);
   });
 }
 
+
+//bindea eventos de la gui
 function bindEvents(){
   //Eventos ui
   $("#btnSave_scheduler").click(function(){
@@ -144,8 +133,6 @@ function bindEvents(){
 
 
 $("document").ready(function(){
-
-
 
   //creo listas ordenables y dropeables.
   $( "#lstPlaylist" ).sortable().disableSelection();

@@ -48,7 +48,7 @@ clip.prototype.getAll =  function (callback){
 
 							redisClient.hgetall(CLIP_KEY + reply,function(error,data){
 								//console.log(data);
-								console.log(data.thumbnails);
+								
 								data.thumbnails = JSON.parse(data.thumbnails);
 								responseList.push (data);
 								if(index == reply.length -1){
